@@ -2,11 +2,12 @@ import argparse
 import logging
 import re
 from datetime import datetime
+import os
 
 import numpy as np
 import torch
 from nltk import bleu, meteor
-from dirouge_score.rouge_scorer import RougeScorer
+from rouge_score.rouge_scorer import RougeScorer
 from tqdm import tqdm
 from src.distinct_n.distinct_n.metrics import distinct_n_corpus_level as distinct_n
 
@@ -15,7 +16,7 @@ from inductor import BartInductor, CometInductor
 FILES = {
     'amie-yago2': 'data/RE-datasets/AMIE-yago2.txt',
     'rules-yago2': 'data/RE-datasets/RuLES-yago2.txt',
-    "ours": "dataset_0528_2.txt",
+    "openrule155": "data/OpenRule155.txt",
     'fewrel': 'data/RE/fewrel-5.txt',
     'semeval': 'data/RE/semeval-5.txt',
     'TREx': 'data/RE/trex-5.txt',
@@ -25,8 +26,11 @@ FILES = {
 }
 
 
+if not os.path.exists('logs/'):
+    os.mkdir('logs/')
+
 logging.basicConfig(
-    filename='logs3/{}.log'.format(str(datetime.now())),
+    filename='logs/evaluation-{}.log'.format(str(datetime.now())),
     format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
     datefmt='%m/%d/%Y %H:%M:%S',
     level=logging.INFO)
@@ -66,8 +70,6 @@ class RelationExtractionEvaluator(object):
                 continue_pretraining_b=self.args.bart_training,
                 if_then=self.args.if_then,
             )
-        elif self.args.inductor == 'statistics':
-            self.inductor = StatisticalInductor()
         elif self.args.inductor == 'comet':
             self.inductor = CometInductor()
 
@@ -157,17 +159,17 @@ class RelationExtractionEvaluator(object):
                                     logger.warning("Skip bleu-4 in example: {}".format(inputs))
                                     pass
 
-                                try:
-                                    self.metrics['bleu-3'].append(
-                                        bleu(
-                                            [reference.split() for reference in references],
-                                            hypo.split(),
-                                            weights=(1 / 3, ) * 3
-                                        )
-                                    )
-                                except Exception:
-                                    logger.warning("Skip bleu-3 in example: {}".format(inputs))
-                                    pass
+                                # try:
+                                #     self.metrics['bleu-3'].append(
+                                #         bleu(
+                                #             [reference.split() for reference in references],
+                                #             hypo.split(),
+                                #             weights=(1 / 3, ) * 3
+                                #         )
+                                #     )
+                                # except Exception:
+                                #     logger.warning("Skip bleu-3 in example: {}".format(inputs))
+                                #     pass
 
                                 try:
                                     self.metrics['bleu-2'].append(
@@ -215,21 +217,21 @@ class RelationExtractionEvaluator(object):
                                 except:
                                     logger.warning("Skip ROUGE-L in example: {}".format(inputs))
                                     pass
-                            try:
-                                self.metrics['distinct-2'].append(
-                                    distinct_n(hypothesis, n=2)
-                                )
-                            except:
-                                logger.warning("Skip distinct-2 in example: {}.".format(inputs))
-                                pass
+                            # try:
+                            #     self.metrics['distinct-2'].append(
+                            #         distinct_n(hypothesis, n=2)
+                            #     )
+                            # except:
+                            #     logger.warning("Skip distinct-2 in example: {}.".format(inputs))
+                            #     pass
                             
-                            try:
-                                self.metrics['distinct-3'].append(
-                                    distinct_n(hypothesis, n=3)
-                                )
-                            except:
-                                logger.warning("Skip distinct-3 in example: {}.".format(inputs))
-                                pass
+                            # try:
+                            #     self.metrics['distinct-3'].append(
+                            #         distinct_n(hypothesis, n=3)
+                            #     )
+                            # except:
+                            #     logger.warning("Skip distinct-3 in example: {}.".format(inputs))
+                            #     pass
 
                             try:
                                 self.metrics['self-BLEU-2'].append(
@@ -260,7 +262,7 @@ if __name__ == '__main__':
     parser.add_argument("--mlm_training", type=bool, default=False)
     parser.add_argument("--bart_training", type=bool, default=False)
     parser.add_argument("--if_then", type=bool, default=False)
-    parser.add_argument("--task", type=str, default=False)
+    parser.add_argument("--task", type=str, default='openrule155')
 
     args = parser.parse_args()
 

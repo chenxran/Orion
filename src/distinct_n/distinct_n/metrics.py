@@ -1,4 +1,4 @@
-from distinct_n.distinct_n.utils import ngrams
+from src.distinct_n.distinct_n.utils import ngrams
 
 __all__ = ["distinct_n_sentence_level", "distinct_n_corpus_level"]
 

@@ -1,0 +1,29 @@
+{e1} is a cause of {e2}
+The symptoms of {e2} appeared after the administration of {e1}
+{e2} developed after {e1}
+Patients developed {e2} after being treated with {e1}
+{e1} contributes indirectly to {e2}
+{e1} has been associated with the development of {e2}
+Symptoms of {e2} abated after withdrawal of {e1}
+A greater risk of {e2} was found in the {e1} group compared to a placebo
+{e2} is a side effect of {e1}
+{e2} has been reported to occur with {e1}
+{e2} has been demonstrated after the administration of {e1}
+{e1} caused the appearance of {e2}
+Use of {e1} can lead to {e2}
+{e1} can augment {e2}
+{e1} can increase the risk of {e2}
+Symptons of {e2} appeared after dosage of {e1}
+{e1} is a chemical
+{e2} is a disease
+{e1} is used for the treatment of {e2}
+{e1} is known to reduce the symptoms of {e2}
+{e1} is used for the prevention of {e2}
+{e1} ameliorates {e2}
+{e1} induces {e2}
+{e1} causes a disease other than {e2}
+{e1} is an organ
+administering {e1} causes {e2} to worsen
+{e1} is effective for the treatment of {e2}
+{e1} has an effect on {e2}
+{e1} has an attenuating effect on {e2}

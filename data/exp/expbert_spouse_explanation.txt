@@ -1,0 +1,41 @@
+{e1} is married to {e2}
+{e1} and {e2} are partners
+{e1} and {e2} share a home
+{e1} and {e2} are a couple
+{e1} and {e2} share the same surname
+{e1} is engaged to {e2}
+{e1} and {e2} have a marriage license
+{e1}'s husband is {e2}
+{e1}'s wife is {e2}
+{e1} and {e2} are married
+{e1} and {e2} are going to tie the knot
+{e1} married {e2}
+{e1} and {e2} have a son
+{e1} and {e2} have a daughter
+{e1} and {e2} are a married couple
+{e1} and {e2} had a wedding
+{e1} is the fiancé of {e2}
+{e1} is the fiancée of {e2}
+{e1} and {e2} married in the past
+{e1} tied the knot with {e2}
+{e1} and {e2} have kids together
+{e1} and {e2} are expecting a son
+{e1} and {e2} are expecting a daughter
+{e1} is the daughter of {e2}
+{e1} is the mother of {e2}
+{e1} and {e2} are the same person
+{e1} is the same person as {e2}
+{e1} is married to someone other than {e2}
+{e1} is the father of {e2}
+{e1} is the son of {e2}
+{e1} is marrying someone other than {e2}
+{e1} is the ex-wife of {e2}
+{e1} is a location
+{e2} is a location
+{e1} is an organization
+{e2} is an organization
+someone is married to {e1}
+someone is married to {e2}
+{e1} is a person
+{e2} is a person
+{e1} and {e2} are different people

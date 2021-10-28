@@ -1,6 +1,7 @@
 import re
 from copy import deepcopy
 
+import argparse
 import torch
 import torch.nn.functional as F
 from transformers import (AutoModelForSeq2SeqLM, AutoTokenizer,
@@ -10,8 +11,8 @@ from src.bart_with_group_beam import BartForConditionalGeneration_GroupBeam
 from src.utils import (construct_template, filter_words,
                        formalize_tA, post_process_template)
 
-MODEL_BART_PATH = "/home/chenxingran/projects/induction/models/cxr-bart-checkpoint-85000"
-MODEL_MLM_PATH = "/home/chenxingran/projects/induction/models/bart-large-cased-continue-ner0.1_filter_date_num"
+MODEL_BART_PATH = "models/model-bart"
+MODEL_MLM_PATH = "models/model-mlm"
 
 RELATIONS = [
     "Causes",
@@ -43,14 +44,13 @@ class BartInductor(object):
             self.model_bart_path = "/data/chenxingran/lmkb-data/checkpoints/continue_pretraining_bart_if_then_100%_fp16"
 
         if group_beam:
-            self.model_bart = BartForConditionalGeneration_GroupBeam.from_pretrained(self.model_bart_path).cuda().half().eval()
+            self.model_bart = BartForConditionalGeneration_GroupBeam.from_pretrained(self.model_bart_path).cuda().eval() # .half()
         else:
-            self.model_bart = BartForConditionalGeneration.from_pretrained(self.model_bart_path).cuda().half().eval()
+            self.model_bart = BartForConditionalGeneration.from_pretrained(self.model_bart_path).cuda().eval() # .half()
         
-        self.model_mlm = BartForConditionalGeneration.from_pretrained(self.model_mlm_path).cuda().half().eval()
+        self.model_mlm = BartForConditionalGeneration.from_pretrained(self.model_mlm_path).cuda().eval() # .half()
     
         self.tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
-        self.tokenizer.add_tokens(["<z>"])
         self.word_length = 2
 
         self.stop_sub_list = ['he', 'she', 'this', 'that', 'and', 'it', 'which', 'who', 'whose', 'there', 'they', '.', 'its', 'one',
@@ -102,7 +102,7 @@ class BartInductor(object):
         if required_token <= self.word_length:
             k = min(k, 2)
         ret = []
-        generated_ids = self.tokenizer(tA, max_length=128, return_tensors='pt')  # ["input_ids"].cuda()
+        generated_ids = self.tokenizer(tA, max_length=128, padding='longest', return_tensors='pt')  # ["input_ids"].cuda()
         for key in generated_ids.keys():
             generated_ids[key] = generated_ids[key].cuda()
         mask_index = torch.where(generated_ids["input_ids"][0] == self.tokenizer.mask_token_id)
@@ -225,8 +225,6 @@ class BartInductor(object):
                 index_words[len(index_words)] = '\t'.join(words)
             # index_words[len(templates)-1] = '\t'.join(words)
             if (len(templates) == batch_size) or enum==len(words_prob_sorted)-1 or (words_prob_sorted[enum+1][2]!=words_prob_sorted[enum][2]):
-                template_length = len(self.tokenizer([templates[0]])['input_ids'][0])
-
                 generated_ids = self.tokenizer(templates, padding="longest", return_tensors='pt')['input_ids'].cuda()
                 generated_ret = self.model_bart.generate(generated_ids, num_beams=num_beams,
                                                     num_beam_groups=num_beams,
@@ -279,7 +277,7 @@ class BartInductor(object):
 
         return ret
 
-    def generate_rule(self, tA, k=6, print_it = False):
+    def generate_rule(self, tA, k=10, print_it = False):
         tA=formalize_tA(tA)
         if 'bart' in str(self.model_mlm.__class__).lower():
             words_prob = self.extract_words_for_tA_bart(tA, k,print_it=print_it)
@@ -309,7 +307,7 @@ class BartInductor(object):
 
 class CometInductor(object):
     def __init__(self):
-        self.model = AutoModelForSeq2SeqLM.from_pretrained("cometbart/comet-atomic_2020_BART").cuda().eval().half()
+        self.model = AutoModelForSeq2SeqLM.from_pretrained("cometbart/comet-atomic_2020_BART").cuda().eval() # .half()
         self.tokenizer = AutoTokenizer.from_pretrained("cometbart/comet-atomic_2020_BART")
         self.task = "summarization"
         self.use_task_specific_params()
@@ -403,3 +401,10 @@ class CometInductor(object):
             decs.append(dec)
 
             return decs
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--text", type=str, default=None, required=True)
+
+    args = parser.parse_args()
