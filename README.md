@@ -1,6 +1,3 @@
-Repo will be completed soon ...
-
-
 # Open Rule Induction
 
 ![image](orion.png)
