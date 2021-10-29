@@ -41,7 +41,7 @@ Then you should download two parts of Orion to here.
 To evaluate Orion's performance on OpenRule155 or other relation extraction datasets, run this command:
 
 ```
-python evaluation.py --task openrule155 --inductor rule
+python evaluation.py --task openrule155 --inductor rule --mlm_training True --bart_training True --group_beam True
 ```
 
 ## Evaluate for Relation Extraction
@@ -49,7 +49,7 @@ python evaluation.py --task openrule155 --inductor rule
 To evaluate Orion's performance on other relation extraction datasets, run this command:
 
 ```
-python evaluation.py --task <task> --inductor rule
+python evaluation.py --task <task> --inductor rule --mlm_training True --bart_training True --group_beam True
 ```
 
 ## Evaluate for costomize rule
