@@ -1,9 +1,13 @@
 # Open Rule Induction
 
+
 ![image](orion.png)
 
 This repository is the official implementation of [Open Rule Induction](https://arxiv.org/abs/2110.13577). This paper has been accepted to NeurIPS 2021.
 
+
+### UPDATES:
+2022.5.22 We have uploaded these two checkpoint models to Huggingface Hub.
 
 ## Abstract
 Rules have a number of desirable properties. It is easy to understand, infer new knowledge, and communicate with other inference systems. One weakness of the previous rule induction systems is that they only find rules within a knowledge base (KB) and therefore cannot generalize to more open and complex real-world rules. Recently, the language model (LM)-based rule generation are proposed to enhance the expressive power of the rules. In this paper, we revisit the differences between KB-based rule induction and LM-based rule generation. We argue that, while KB-based methods inducted rules by discovering data commonalitiess, the current LM-based methods are “learning rules from rules”. This limits these methods to only produce “canned” rules whose patterns are constrained by the annotated rules, while discarding the rich expressive power of LMs for free text.
@@ -29,12 +33,9 @@ cd models
 ```
 Then you should download two parts of Orion to here.
 
-1. Download model for $P(ins|r_p)$ from [here](https://drive.google.com/drive/folders/1dgWZS4Cr_QHpGPJ8Rju4Gd_93s340K-v?usp=sharing)
+1. Download model for $P(ins|r_p)$ (instance generator) from [here](https://drive.google.com/drive/folders/1dgWZS4Cr_QHpGPJ8Rju4Gd_93s340K-v?usp=sharing). You can also find it on [Huggingface Hub](https://huggingface.co/chenxran/orion-instance-generator).
 
-2. Download model for $P(r_h|ins)$ from [here](https://drive.google.com/drive/folders/1syg5b6AmlAT7k2Sx1JpLFXKNX6fOeNoC?usp=sharing)
-
-
-
+2. Download model for $P(r_h|ins)$ (hypothesis generator) from [here](https://drive.google.com/drive/folders/1syg5b6AmlAT7k2Sx1JpLFXKNX6fOeNoC?usp=sharing). You can also find it on [Huggingface Hub](https://huggingface.co/chenxran/orion-hypothesis-generator).
 
 ## Evaluate for OpenRule155
 

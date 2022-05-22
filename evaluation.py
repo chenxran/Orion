@@ -66,8 +66,8 @@ class RelationExtractionEvaluator(object):
         if self.args.inductor == 'rule':
             self.inductor = BartInductor(
                 group_beam=self.args.group_beam,
-                continue_pretraining_a=self.args.mlm_training,
-                continue_pretraining_b=self.args.bart_training,
+                continue_pretrain_instance_generator=self.args.mlm_training,
+                continue_pretrain_hypo_generator=self.args.bart_training,
                 if_then=self.args.if_then,
             )
         elif self.args.inductor == 'comet':
@@ -107,8 +107,6 @@ class RelationExtractionEvaluator(object):
                 "bleu-1": [],
                 "METEOR": [],
                 "ROUGE-L": [],
-                "distinct-2": [],
-                "distinct-3": [],
                 "self-BLEU-2": [],
             }
             with open(FILES[task], 'r', encoding='utf-8') as file:
@@ -130,13 +128,13 @@ class RelationExtractionEvaluator(object):
                             
                         logger.info("***********Input************")
                         logger.info(inputs)
-                        logger.info("*********References*********")
+                        logger.info("*********Hypothesis*********")
                         for i, hypo in enumerate(hypothesis):
                             hypothesis[i] = self.clean(hypo.lower().strip())
                             logger.info(hypo)
 
                         logger.info("****************************")
-                        logger.info("*********Hypothesis*********")
+                        logger.info("*********References*********")
                         logger.info(references)
                         logger.info("****************************")
                         
@@ -159,17 +157,17 @@ class RelationExtractionEvaluator(object):
                                     logger.warning("Skip bleu-4 in example: {}".format(inputs))
                                     pass
 
-                                # try:
-                                #     self.metrics['bleu-3'].append(
-                                #         bleu(
-                                #             [reference.split() for reference in references],
-                                #             hypo.split(),
-                                #             weights=(1 / 3, ) * 3
-                                #         )
-                                #     )
-                                # except Exception:
-                                #     logger.warning("Skip bleu-3 in example: {}".format(inputs))
-                                #     pass
+                                try:
+                                    self.metrics['bleu-3'].append(
+                                        bleu(
+                                            [reference.split() for reference in references],
+                                            hypo.split(),
+                                            weights=(1 / 3, ) * 3
+                                        )
+                                    )
+                                except Exception:
+                                    logger.warning("Skip bleu-3 in example: {}".format(inputs))
+                                    pass
 
                                 try:
                                     self.metrics['bleu-2'].append(
@@ -217,22 +215,6 @@ class RelationExtractionEvaluator(object):
                                 except:
                                     logger.warning("Skip ROUGE-L in example: {}".format(inputs))
                                     pass
-                            # try:
-                            #     self.metrics['distinct-2'].append(
-                            #         distinct_n(hypothesis, n=2)
-                            #     )
-                            # except:
-                            #     logger.warning("Skip distinct-2 in example: {}.".format(inputs))
-                            #     pass
-                            
-                            # try:
-                            #     self.metrics['distinct-3'].append(
-                            #         distinct_n(hypothesis, n=3)
-                            #     )
-                            # except:
-                            #     logger.warning("Skip distinct-3 in example: {}.".format(inputs))
-                            #     pass
-
                             try:
                                 self.metrics['self-BLEU-2'].append(
                                     self.self_bleu(
@@ -242,6 +224,7 @@ class RelationExtractionEvaluator(object):
                             except:
                                 logger.warning("Skip self-bleu-2 in example: {}.".format(inputs))
                                 pass
+                        # break
 
             self.print(task, self.metrics)
 

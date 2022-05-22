@@ -11,8 +11,8 @@ from src.bart_with_group_beam import BartForConditionalGeneration_GroupBeam
 from src.utils import (construct_template, filter_words,
                        formalize_tA, post_process_template)
 
-MODEL_BART_PATH = "models/model-bart"
-MODEL_MLM_PATH = "models/model-mlm"
+ORION_HYPO_GENERATOR = 'chenxran/orion-hypothesis-generator'
+ORION_INS_GENERATOR = 'chenxran/orion-instance-generator'
 
 RELATIONS = [
     "Causes",
@@ -32,23 +32,20 @@ class BartInductor(object):
     def __init__(
         self, 
         group_beam=True,
-        continue_pretraining_a=True,
-        continue_pretraining_b=True,
+        continue_pretrain_instance_generator=True,
+        continue_pretrain_hypo_generator=True,
         if_then=False
     ):
         self.if_then = if_then
-        self.model_mlm_path = 'facebook/bart-large' if not continue_pretraining_a else MODEL_MLM_PATH
-        self.model_bart_path = 'facebook/bart-large' if not continue_pretraining_b else MODEL_BART_PATH
-
-        if if_then:
-            self.model_bart_path = "/data/chenxingran/lmkb-data/checkpoints/continue_pretraining_bart_if_then_100%_fp16"
+        self.orion_instance_generator_path = 'facebook/bart-large' if not continue_pretrain_instance_generator else ORION_INS_GENERATOR
+        self.orion_hypothesis_generator_path = 'facebook/bart-large' if not continue_pretrain_hypo_generator else ORION_HYPO_GENERATOR
 
         if group_beam:
-            self.model_bart = BartForConditionalGeneration_GroupBeam.from_pretrained(self.model_bart_path).cuda().eval() # .half()
+            self.orion_hypothesis_generator = BartForConditionalGeneration_GroupBeam.from_pretrained(self.orion_hypothesis_generator_path).cuda().eval().half()
         else:
-            self.model_bart = BartForConditionalGeneration.from_pretrained(self.model_bart_path).cuda().eval() # .half()
+            self.orion_hypothesis_generator = BartForConditionalGeneration.from_pretrained(self.orion_hypothesis_generator_path).cuda().eval().half()
         
-        self.model_mlm = BartForConditionalGeneration.from_pretrained(self.model_mlm_path).cuda().eval() # .half()
+        self.orion_instance_generator = BartForConditionalGeneration.from_pretrained(self.orion_instance_generator_path).cuda().eval().half()
     
         self.tokenizer = BartTokenizer.from_pretrained("facebook/bart-large")
         self.word_length = 2
@@ -106,7 +103,7 @@ class BartInductor(object):
         for key in generated_ids.keys():
             generated_ids[key] = generated_ids[key].cuda()
         mask_index = torch.where(generated_ids["input_ids"][0] == self.tokenizer.mask_token_id)
-        generated_ret = self.model_mlm(**generated_ids)
+        generated_ret = self.orion_instance_generator(**generated_ids)
         #logits = generated_ret.logits
         logits = generated_ret[0]
         softmax = F.softmax(logits, dim=-1)
@@ -130,7 +127,7 @@ class BartInductor(object):
     def extract_words_for_tA_bart(self, tA, k=6, print_it = False):
         spans = [t.lower().strip() for t in tA[:-1].split('<mask>')]
         generated_ids = self.tokenizer([tA], padding='longest', return_tensors='pt')['input_ids'].cuda()
-        generated_ret = self.model_mlm.generate(generated_ids, num_beams=max(120, k),
+        generated_ret = self.orion_instance_generator.generate(generated_ids, num_beams=max(120, k),
                                             #num_beam_groups=max(120, k),
                                             max_length=generated_ids.size(1) + 15,
                                             num_return_sequences=max(120, k), #min_length=generated_ids.size(1),
@@ -226,7 +223,7 @@ class BartInductor(object):
             # index_words[len(templates)-1] = '\t'.join(words)
             if (len(templates) == batch_size) or enum==len(words_prob_sorted)-1 or (words_prob_sorted[enum+1][2]!=words_prob_sorted[enum][2]):
                 generated_ids = self.tokenizer(templates, padding="longest", return_tensors='pt')['input_ids'].cuda()
-                generated_ret = self.model_bart.generate(generated_ids, num_beams=num_beams,
+                generated_ret = self.orion_hypothesis_generator.generate(generated_ids, num_beams=num_beams,
                                                     num_beam_groups=num_beams,
                                                     max_length=28, #template_length+5,
                                                     num_return_sequences=num_beams, min_length=3,
@@ -279,7 +276,7 @@ class BartInductor(object):
 
     def generate_rule(self, tA, k=10, print_it = False):
         tA=formalize_tA(tA)
-        if 'bart' in str(self.model_mlm.__class__).lower():
+        if 'bart' in str(self.orion_instance_generator.__class__).lower():
             words_prob = self.extract_words_for_tA_bart(tA, k,print_it=print_it)
             words_prob = filter_words(words_prob)[:k]
             # if print_it:
@@ -307,8 +304,8 @@ class BartInductor(object):
 
 class CometInductor(object):
     def __init__(self):
-        self.model = AutoModelForSeq2SeqLM.from_pretrained("cometbart/comet-atomic_2020_BART").cuda().eval() # .half()
-        self.tokenizer = AutoTokenizer.from_pretrained("cometbart/comet-atomic_2020_BART")
+        self.model = AutoModelForSeq2SeqLM.from_pretrained("adamlin/comet-atomic_2020_BART").cuda().eval() # .half()
+        self.tokenizer = AutoTokenizer.from_pretrained("adamlin/comet-atomic_2020_BART")
         self.task = "summarization"
         self.use_task_specific_params()
         self.decoder_start_token_id = None
@@ -402,9 +399,3 @@ class CometInductor(object):
 
             return decs
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--text", type=str, default=None, required=True)
-
-    args = parser.parse_args()

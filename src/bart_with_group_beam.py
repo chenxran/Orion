@@ -472,7 +472,7 @@ class BartForConditionalGeneration_GroupBeam(BartForConditionalGeneration):
                 batch_group_indices = []
 
                 if output_scores:
-                    processed_score = torch.zeros_like(outputs.logits[:, -1, :]).float()
+                    processed_score = torch.zeros_like(outputs.logits[:, -1, :]).half()  # .float()
 
                 for batch_idx in range(batch_size):
                     batch_group_indices.extend(
@@ -499,7 +499,7 @@ class BartForConditionalGeneration_GroupBeam(BartForConditionalGeneration):
                 )
 
                 if output_scores:
-                    processed_score[batch_group_indices] = next_token_scores.float()
+                    processed_score[batch_group_indices] = next_token_scores.half()  # .float()
 
                 # reshape for beam search
                 next_token_scores = next_token_scores.view(batch_size, group_size * vocab_size)
